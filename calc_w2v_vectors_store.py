@@ -47,7 +47,7 @@ def embedAndConcatenate(df):
 
 
 	# Load w2v model
-	nlp = KeyedVectors.load_word2vec_format('../GoogleNews-vectors-negative300.bin', binary=True)
+	nlp = KeyedVectors.load_word2vec_format('~/Downloads/GoogleNews-vectors-negative300.bin', binary=True)
 
 	data = np.zeros((df.shape[0], 2*(nlp['dog'].shape[0])))
 	# print(trainData.shape)
@@ -80,7 +80,7 @@ def embedAndConcatenate(df):
 		# print(np.array(dfTToken['Event 1'][i]).shape)
 		data[i] = np.array(x).reshape((1,-1))
 
-	np.savetxt('w2v_Averaged_Expanded_Train.csv', data, delimiter = ',')
+	np.savetxt('../w2v_Averaged_Expanded_Test.csv', data, delimiter = ',')
 
 	return data, df
 
@@ -98,6 +98,7 @@ def tokenizeE1E2AndStore(df):
 
 
 def main():
+
 	# Loading Training Data
 	dfRaw = pd.read_csv("train_expanded.csv", usecols = fields)
 	dfTToken = tokenizeE1E2AndStore(dfRaw)
@@ -108,6 +109,14 @@ def main():
 	# print(trainData.shape)
 	# print('Proceeding for Training')
 	# prediction_result = trainAndTestBaseline(trainData, dfTrain)
+
+	# Load and Process Test Data
+	dfTestRaw = pd.read_csv("P1_testing_set.csv", usecols = fields)
+	print('Test set loaded')
+	dfTestToken = tokenizeE1E2AndStore(dfTestRaw)
+	print('Test set tokenized')
+	testData,_ = embedAndConcatenate(dfTestToken)
+	print('Test set vectors formed and concatenated')
 
 
 main()
