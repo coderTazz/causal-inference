@@ -4,12 +4,14 @@ import pandas as pd
 import nltk
 from nltk.tokenize import RegexpTokenizer
 import numpy as np
-import sklearn
-from sklearn.linear_model import SGDClassifier
-from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix
-from sklearn import svm
+# import sklearn
+# from sklearn.linear_model import SGDClassifier
+# from sklearn.svm import SVC
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.metrics import confusion_matrix
+# from sklearn import svm
+import gensim
+from gensim.models import KeyedVectors
 
 
 
@@ -27,7 +29,7 @@ def trainAndTestBaseline(trainData, dfTrain):
 	# Load and Process Test Data
 	dfTestRaw = pd.read_csv("P1_testing_set.csv", usecols = fields)
 	print('Test set loaded')
-	dfTestToken = tokenizeE1E2AndStore(dfTestRaw, False)
+	dfTestToken = tokenizeE1E2AndStore(dfTestRaw)
 	print('Test set tokenized')
 	testData,_ = embedAndConcatenate(dfTestToken)
 	print('Test set vectors formed and concatenated')
@@ -44,25 +46,33 @@ def trainAndTestBaseline(trainData, dfTrain):
 def embedAndConcatenate(df):
 
 
-	# Load spacy model
-	nlp = spacy.load('en_core_web_lg')
+	# Load w2v model
+	nlp = KeyedVectors.load_word2vec_format('~/Downloads/GoogleNews-vectors-negative300.bin', binary=True)
 
-	data = np.zeros((df.shape[0], 2*len(nlp.vocab['dog'].vector)))
+	data = np.zeros((df.shape[0], 2*(nlp['dog'].shape[0])))
 	# print(trainData.shape)
 
 	for i in range(0, df.shape[0]):
 		
 		# Event1
-		x = np.zeros(len(nlp.vocab['dog'].vector,))
-		for j in range(0, len(df['Event 1'].iloc(0)[i])):
-			x = x + nlp.vocab[df['Event 1'].iloc(0)[i][j]].vector
-		x = x/len(df['Event 1'].iloc(0)[i])
+		x = np.zeros((nlp['dog'].shape[0],))
+		n = len(df['Event 1'][i])
+		for j in range(0, len(df['Event 1'][i])):
+			if df['Event 1'][i][j] in nlp.vocab:
+				x = x + nlp[df['Event 1'][i][j]]
+			else:
+				n = n - 1
+		x = x/n
 
 		# Event2
-		y = np.zeros(len(nlp.vocab['dog'].vector,))
-		for j in range(0, len(df['Event 2'].iloc(0)[i])):
-			y = y + nlp.vocab[df['Event 2'].iloc(0)[i][j]].vector
-		y = y/len(df['Event 2'].iloc(0)[i])
+		y = np.zeros((nlp['dog'].shape[0],))
+		n = len(df['Event 2'][i])
+		for j in range(0, len(df['Event 2'][i])):
+			if df['Event 2'][i][j] in nlp.vocab:
+				x = x + nlp[df['Event 2'][i][j]]
+			else:
+				n = n - 1
+		y = y/n
 
 		# Concatenate the two events and store
 		x = np.concatenate((x, y))
@@ -70,34 +80,43 @@ def embedAndConcatenate(df):
 		# print(np.array(dfTToken['Event 1'][i]).shape)
 		data[i] = np.array(x).reshape((1,-1))
 
+	np.savetxt('../w2v_Averaged_Expanded_Test.csv', data, delimiter = ',')
+
 	return data, df
 
 	
 
 
 
-def tokenizeE1E2AndStore(dfRaw, storeBool):
+def tokenizeE1E2AndStore(df):
 	tokenizer = RegexpTokenizer(r'\w(?:[-\w]*\w)?')
-	dfRaw['Event 1'] = dfRaw['Event 1'].apply(tokenizer.tokenize)
-	dfRaw['Event 2'] = dfRaw['Event 2'].apply(tokenizer.tokenize)
-	if storeBool:
-		dfRaw.to_csv('Tokenized_Small_Train_Expanded_Set_W2V.csv')
-	else:
-		return dfRaw
+	df['Event 1'] = df['Event 1'].apply(tokenizer.tokenize)
+	df['Event 2'] = df['Event 2'].apply(tokenizer.tokenize)
+	
+	return df
 
 
 
 def main():
+
 	# Loading Training Data
 	dfRaw = pd.read_csv("train_expanded.csv", usecols = fields)
-	tokenizeE1E2AndStore(dfRaw, True)
+	dfTToken = tokenizeE1E2AndStore(dfRaw)
 	print('Training Set Tokenized')
-	dfTToken = pd.read_csv("Tokenized_Small_Train_Expanded_Set_W2V.csv", usecols = fields)
+	# dfTToken = pd.read_csv("Tokenized_Small_Train_Expanded_Set_W2V.csv", usecols = fields)
 	trainData, dfTrain = embedAndConcatenate(dfTToken)
-	print('Train set vectors formed and concatenated')
+	print('Train set vectors formed, concatenated and stored')
 	# print(trainData.shape)
 	# print('Proceeding for Training')
 	# prediction_result = trainAndTestBaseline(trainData, dfTrain)
+
+	# Load and Process Test Data
+	dfTestRaw = pd.read_csv("P1_testing_set.csv", usecols = fields)
+	print('Test set loaded')
+	dfTestToken = tokenizeE1E2AndStore(dfTestRaw)
+	print('Test set tokenized')
+	testData,_ = embedAndConcatenate(dfTestToken)
+	print('Test set vectors formed and concatenated')
 
 
 main()
