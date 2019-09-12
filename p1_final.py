@@ -31,9 +31,9 @@ def trainAndTestBaseline(trainData, dfTrain):
 	print('Test set tokenized')
 	testData,_ = embedAndConcatenate(dfTestToken)
 	print('Test set vectors formed and concatenated')
-	prediction_result = causal_classify.predict(trainData)
+	prediction_result = causal_classify.predict(testData)
 	print('Result')
-	print(round(100*numpy.mean(prediction_result == trainData['Label']), 2))
+	print(round(100*numpy.mean(prediction_result == dfTestRaw['Label']), 2))
 
 	# for i in range(0, prediction_result.shape[0]):
 	# 	print(str(prediction_result[i]) + " " + str(dfTestToken['Label'][i]))
