@@ -80,7 +80,7 @@ def embedAndConcatenate(df):
 		# print(np.array(dfTToken['Event 1'][i]).shape)
 		data[i] = np.array(x).reshape((1,-1))
 
-	np.savetxt('../w2v_Averaged_Expanded_Test.csv', data, delimiter = ',')
+	np.savetxt('../w2v_Averaged_Normal_Train.csv', data, delimiter = ',')
 
 	return data, df
 
@@ -100,23 +100,24 @@ def tokenizeE1E2AndStore(df):
 def main():
 
 	# Loading Training Data
-	dfRaw = pd.read_csv("train_expanded.csv", usecols = fields)
+	dfRaw = pd.read_csv("P1_training_set.csv", usecols = fields)
 	dfTToken = tokenizeE1E2AndStore(dfRaw)
 	print('Training Set Tokenized')
 	# dfTToken = pd.read_csv("Tokenized_Small_Train_Expanded_Set_W2V.csv", usecols = fields)
 	trainData, dfTrain = embedAndConcatenate(dfTToken)
 	print('Train set vectors formed, concatenated and stored')
+
 	# print(trainData.shape)
 	# print('Proceeding for Training')
 	# prediction_result = trainAndTestBaseline(trainData, dfTrain)
 
 	# Load and Process Test Data
-	dfTestRaw = pd.read_csv("P1_testing_set.csv", usecols = fields)
-	print('Test set loaded')
-	dfTestToken = tokenizeE1E2AndStore(dfTestRaw)
-	print('Test set tokenized')
-	testData,_ = embedAndConcatenate(dfTestToken)
-	print('Test set vectors formed and concatenated')
+	# dfTestRaw = pd.read_csv("test_expanded.csv", usecols = fields)
+	# print('Test set loaded')
+	# dfTestToken = tokenizeE1E2AndStore(dfTestRaw)
+	# print('Test set tokenized')
+	# testData,_ = embedAndConcatenate(dfTestToken)
+	# print('Test set vectors formed and concatenated')
 
 
 main()
